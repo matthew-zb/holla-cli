@@ -152,6 +152,8 @@ holla slack users info --user @username -w <ws> --json
 holla slack api <method> --body '{"key":"value"}' -w <ws>  # Raw API passthrough
 ```
 
+**Note**: `holla slack api` is a raw passthrough — messages sent via `api chat.postMessage` appear as bot, not as the user. Always use `holla slack chat send` / `reply` / `edit` for messaging.
+
 ## Output formats
 
 All read commands support: `--json` (structured), `--plain` (tab-separated), or table (default).

@@ -88,6 +88,21 @@ describe("api command parsing", () => {
 		expect(mockExit).toHaveBeenCalledWith(1)
 	})
 
+	it("should warn when using chat.postMessage via api", async () => {
+		await runApi(["api", "chat.postMessage", "--body", '{"channel":"C123","text":"hi"}'])
+		expect(console.error).toHaveBeenCalledWith(expect.stringContaining("holla slack chat send"))
+	})
+
+	it("should warn when using chat.update via api", async () => {
+		await runApi(["api", "chat.update", "--body", '{"channel":"C123","ts":"1","text":"hi"}'])
+		expect(console.error).toHaveBeenCalledWith(expect.stringContaining("holla slack chat edit"))
+	})
+
+	it("should not warn for read-only api methods", async () => {
+		await runApi(["api", "users.list"])
+		expect(console.error).not.toHaveBeenCalled()
+	})
+
 	it("should handle complex nested JSON body", async () => {
 		await runApi(["api", "chat.postMessage", "--body", '{"channel":"C123","blocks":[{"type":"section"}]}'])
 		expect(mockApiCall).toHaveBeenCalledWith("chat.postMessage", {

@@ -35,6 +35,16 @@ export const apiCommand = defineCommand({
       process.exit(1);
     }
 
+    // Warn when using write methods that have dedicated commands
+    const writeMethodHints: Record<string, string> = {
+      "chat.postMessage": "holla slack chat send",
+      "chat.update": "holla slack chat edit",
+    };
+    const hint = writeMethodHints[method];
+    if (hint) {
+      console.error(`\x1b[33m⚠\x1b[0m Messages sent via api passthrough appear as bot. Use \`${hint}\` instead for proper user attribution.`);
+    }
+
     const { token } = await getToken(args.workspace);
     const client = createSlackClient(token);
 
