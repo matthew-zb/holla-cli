@@ -1,6 +1,7 @@
 import { defineCommand } from "citty";
 import { getToken } from "../../lib/credentials.ts";
 import { createSlackClient } from "./client.ts";
+import { resolveChannel } from "./resolve.ts";
 
 export const apiCommand = defineCommand({
   meta: {
@@ -45,7 +46,7 @@ export const apiCommand = defineCommand({
       console.error(`\x1b[33m⚠\x1b[0m Messages sent via api passthrough appear as bot. Use \`${hint}\` instead for proper user attribution.`);
     }
 
-    const { token } = await getToken(args.workspace);
+    const { token, workspace } = await getToken(args.workspace);
     const client = createSlackClient(token);
 
     const apiArgs: Record<string, unknown> = {};
@@ -89,6 +90,16 @@ export const apiCommand = defineCommand({
         } else {
           apiArgs[key] = true;
         }
+      }
+    }
+
+    // Auto-resolve channel names in channel-related fields
+    const channelFields = ["channel", "channels"];
+    for (const field of channelFields) {
+      const val = apiArgs[field];
+      if (typeof val === "string" && val && !/^[CDG][A-Z0-9]+$/.test(val)) {
+        const input = val.startsWith("#") ? val : `#${val}`;
+        apiArgs[field] = await resolveChannel(client, input, workspace);
       }
     }
 

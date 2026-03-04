@@ -1,6 +1,7 @@
 import { vi, beforeEach } from "vitest"
 
 const mockApiCall = vi.fn().mockResolvedValue({ ok: true })
+const mockResolveChannel = vi.fn().mockResolvedValue("C_RESOLVED")
 let mockExit: ReturnType<typeof vi.fn>
 
 vi.mock("../src/lib/credentials.ts", () => ({
@@ -13,8 +14,13 @@ vi.mock("../src/platforms/slack/client.ts", () => ({
 	})),
 }))
 
+vi.mock("../src/platforms/slack/resolve.ts", () => ({
+	resolveChannel: (...args: unknown[]) => mockResolveChannel(...args),
+}))
+
 beforeEach(() => {
 	mockApiCall.mockClear().mockResolvedValue({ ok: true })
+	mockResolveChannel.mockClear().mockResolvedValue("C_RESOLVED")
 	mockExit = vi.spyOn(process, "exit").mockImplementation((() => {
 		throw new Error("process.exit")
 	}) as any)
@@ -109,5 +115,42 @@ describe("api command parsing", () => {
 			channel: "C123",
 			blocks: [{ type: "section" }],
 		})
+	})
+})
+
+describe("api channel auto-resolve", () => {
+	it("should resolve bare channel name to ID", async () => {
+		await runApi(["api", "conversations.history", "--channel", "general"])
+		expect(mockResolveChannel).toHaveBeenCalledWith(expect.anything(), "#general", "test-ws")
+		expect(mockApiCall).toHaveBeenCalledWith("conversations.history", { channel: "C_RESOLVED" })
+	})
+
+	it("should resolve #-prefixed channel name to ID", async () => {
+		await runApi(["api", "conversations.history", "--body", '{"channel":"#general"}'])
+		expect(mockResolveChannel).toHaveBeenCalledWith(expect.anything(), "#general", "test-ws")
+		expect(mockApiCall).toHaveBeenCalledWith("conversations.history", { channel: "C_RESOLVED" })
+	})
+
+	it("should pass through channel IDs starting with C", async () => {
+		await runApi(["api", "conversations.history", "--channel", "C01234567"])
+		expect(mockResolveChannel).not.toHaveBeenCalled()
+		expect(mockApiCall).toHaveBeenCalledWith("conversations.history", { channel: "C01234567" })
+	})
+
+	it("should pass through DM IDs starting with D", async () => {
+		await runApi(["api", "conversations.history", "--channel", "D01234567"])
+		expect(mockResolveChannel).not.toHaveBeenCalled()
+		expect(mockApiCall).toHaveBeenCalledWith("conversations.history", { channel: "D01234567" })
+	})
+
+	it("should pass through group DM IDs starting with G", async () => {
+		await runApi(["api", "conversations.history", "--channel", "G01234567"])
+		expect(mockResolveChannel).not.toHaveBeenCalled()
+		expect(mockApiCall).toHaveBeenCalledWith("conversations.history", { channel: "G01234567" })
+	})
+
+	it("should not resolve when no channel field is present", async () => {
+		await runApi(["api", "users.list", "--limit", "100"])
+		expect(mockResolveChannel).not.toHaveBeenCalled()
 	})
 })

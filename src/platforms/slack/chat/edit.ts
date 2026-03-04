@@ -27,6 +27,7 @@ export const editCommand = defineCommand({
     text: {
       type: "string",
       description: "New message text in markdown format (reads from stdin if omitted)",
+      alias: ["message", "m"],
     },
   },
   async run({ args }) {

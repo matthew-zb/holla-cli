@@ -25,6 +25,7 @@ export const scheduleCommand = defineCommand({
     text: {
       type: "string",
       description: "Message text in markdown format (reads from stdin if omitted)",
+      alias: ["message", "m"],
     },
     at: {
       type: "string",

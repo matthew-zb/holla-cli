@@ -116,6 +116,27 @@ describe("send command", () => {
 	})
 })
 
+describe("--message alias for --text", () => {
+	it("send command should define message alias for text arg", async () => {
+		const { sendCommand } = await import("../src/platforms/slack/chat/send.ts")
+		const args = (sendCommand as any).args
+		expect(args.text.alias).toContain("message")
+		expect(args.text.alias).toContain("m")
+	})
+
+	it("reply command should define message alias for text arg", async () => {
+		const { replyCommand } = await import("../src/platforms/slack/chat/reply.ts")
+		const args = (replyCommand as any).args
+		expect(args.text.alias).toContain("message")
+	})
+
+	it("edit command should define message alias for text arg", async () => {
+		const { editCommand } = await import("../src/platforms/slack/chat/edit.ts")
+		const args = (editCommand as any).args
+		expect(args.text.alias).toContain("message")
+	})
+})
+
 describe("reply command", () => {
 	async function runReply(args: Record<string, unknown>) {
 		const { replyCommand } = await import("../src/platforms/slack/chat/reply.ts")
