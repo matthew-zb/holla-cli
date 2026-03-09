@@ -87,6 +87,27 @@ async function fetchChannelMap(client: WebClient, workspace: string): Promise<Na
   return map;
 }
 
+async function findChannelIdByName(client: WebClient, workspace: string, name: string): Promise<string | undefined> {
+  const cached = await loadCache(workspace, "channels");
+  if (cached) return cached[name];
+
+  let cursor: string | undefined;
+  do {
+    const result = await client.conversations.list({
+      limit: 200,
+      types: "public_channel,private_channel",
+      cursor,
+      exclude_archived: true,
+    });
+    for (const ch of result.channels ?? []) {
+      if (ch.name === name && ch.id) return ch.id;
+    }
+    cursor = result.response_metadata?.next_cursor || undefined;
+  } while (cursor);
+
+  return undefined;
+}
+
 async function fetchUserMap(client: WebClient, workspace: string): Promise<NameMap> {
   const cached = await loadCache(workspace, "users");
   if (cached) return cached;
@@ -115,10 +136,11 @@ export async function resolveChannel(
 ): Promise<string> {
   if (!input.startsWith("#")) return input;
   const name = input.slice(1);
+  const id = await findChannelIdByName(client, workspace, name);
+  if (id) return id;
+  // Not found — fetch full map for suggestions
   const map = await fetchChannelMap(client, workspace);
-  const id = map[name];
-  if (!id) throw new Error(`Channel not found: ${input}${suggest(name, Object.keys(map))}`);
-  return id;
+  throw new Error(`Channel not found: ${input}${suggest(name, Object.keys(map))}`);
 }
 
 export async function resolveUser(

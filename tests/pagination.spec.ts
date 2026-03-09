@@ -104,6 +104,23 @@ describe("channels list", () => {
 			expect.objectContaining({ cursor: "manual_cursor" }),
 		)
 	})
+
+	it("should filter channels by --name (case-insensitive substring)", async () => {
+		mockConversationsList.mockResolvedValueOnce({
+			channels: [
+				{ id: "C1", name: "general" },
+				{ id: "C2", name: "random" },
+				{ id: "C3", name: "general-announcements" },
+			],
+			response_metadata: { next_cursor: "" },
+		})
+		await run({ name: "GENERAL", json: true })
+		const output = (console.log as any).mock.calls[0][0]
+		const parsed = JSON.parse(output)
+		expect(parsed).toHaveLength(2)
+		expect(parsed[0].name).toBe("general")
+		expect(parsed[1].name).toBe("general-announcements")
+	})
 })
 
 describe("channels history", () => {

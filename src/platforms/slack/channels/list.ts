@@ -15,6 +15,10 @@ export const listCommand = defineCommand({
       description:
         "Comma-separated channel types (default: public_channel,private_channel)",
     },
+    name: {
+      type: "string",
+      description: "Filter channels by name (case-insensitive substring match)",
+    },
   },
   async run({ args }) {
     try {
@@ -24,6 +28,7 @@ export const listCommand = defineCommand({
       const limit = args.limit ? parseInt(args.limit, 10) : 20;
       const types = args.types ?? "public_channel,private_channel";
 
+      const nameFilter = args.name ? args.name.toLowerCase() : undefined;
       const channels: Record<string, unknown>[] = [];
       let cursor: string | undefined = args.cursor;
 
@@ -35,9 +40,11 @@ export const listCommand = defineCommand({
         });
 
         for (const ch of result.channels ?? []) {
+          const chName = ch.name ?? "";
+          if (nameFilter && !chName.toLowerCase().includes(nameFilter)) continue;
           channels.push({
             id: ch.id ?? "",
-            name: ch.name ?? "",
+            name: chName,
             topic: (ch.topic as { value?: string })?.value ?? "",
             num_members: ch.num_members ?? 0,
           });

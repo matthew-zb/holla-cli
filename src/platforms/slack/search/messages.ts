@@ -30,7 +30,7 @@ export const messagesCommand = defineCommand({
       });
 
       const messagesResult = result.messages as {
-        matches?: { channel?: { name: string }; username?: string; ts: string; text: string }[];
+        matches?: { channel?: { id?: string; name: string }; username?: string; ts: string; text: string }[];
         paging?: { page?: number; pages?: number; total?: number };
       };
       const messages = messagesResult?.matches ?? [];
@@ -38,6 +38,7 @@ export const messagesCommand = defineCommand({
       printPaging("", messagesResult?.paging);
 
       const rows = messages.map((m) => ({
+        channelId: m.channel?.id ?? "",
         channel: m.channel?.name ?? "",
         user: m.username ?? "",
         ts: m.ts,
@@ -45,6 +46,7 @@ export const messagesCommand = defineCommand({
       }));
 
       printOutput(rows, getOutputFormat(args), [
+        { key: "channelId", label: "Channel ID" },
         { key: "channel", label: "Channel" },
         { key: "user", label: "User" },
         { key: "ts", label: "Timestamp" },

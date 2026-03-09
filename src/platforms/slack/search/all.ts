@@ -30,7 +30,7 @@ export const allCommand = defineCommand({
       });
 
       const messagesResult = result.messages as {
-        matches?: { channel?: { name: string }; username?: string; ts: string; text: string }[];
+        matches?: { channel?: { id?: string; name: string }; username?: string; ts: string; text: string }[];
         paging?: { page?: number; pages?: number; total?: number };
       };
       const messages = messagesResult?.matches ?? [];
@@ -47,12 +47,14 @@ export const allCommand = defineCommand({
       if (messages.length > 0) {
         console.log("\x1b[1mMessages:\x1b[0m");
         const messageRows = messages.map((m) => ({
+          channelId: m.channel?.id ?? "",
           channel: m.channel?.name ?? "",
           user: m.username ?? "",
           ts: m.ts,
           text: (m.text ?? "").slice(0, 80),
         }));
         printOutput(messageRows, getOutputFormat(args), [
+          { key: "channelId", label: "Channel ID" },
           { key: "channel", label: "Channel" },
           { key: "user", label: "User" },
           { key: "ts", label: "Timestamp" },

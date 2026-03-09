@@ -2,13 +2,13 @@ import { vi, beforeEach } from "vitest"
 
 const mockSearchMessages = vi.fn().mockResolvedValue({
 	messages: {
-		matches: [{ channel: { name: "general" }, username: "bob", ts: "111.222", text: "hello" }],
+		matches: [{ channel: { id: "C001", name: "general" }, username: "bob", ts: "111.222", text: "hello" }],
 		paging: { page: 1, pages: 5, total: 100, count: 20 },
 	},
 })
 const mockSearchAll = vi.fn().mockResolvedValue({
 	messages: {
-		matches: [{ channel: { name: "general" }, username: "bob", ts: "111.222", text: "hello" }],
+		matches: [{ channel: { id: "C001", name: "general" }, username: "bob", ts: "111.222", text: "hello" }],
 		paging: { page: 1, pages: 3, total: 50, count: 20 },
 	},
 	files: {
@@ -84,6 +84,13 @@ describe("search messages", () => {
 	it("should print paging info to stderr", async () => {
 		await run({})
 		expect(console.error).toHaveBeenCalledWith("Page 1/5 (100 total results)")
+	})
+
+	it("should include channelId in JSON output", async () => {
+		await run({ json: true })
+		const output = (console.log as any).mock.calls[0][0]
+		const parsed = JSON.parse(output)
+		expect(parsed[0].channelId).toBe("C001")
 	})
 })
 

@@ -59,11 +59,24 @@ describe("resolveChannel", () => {
 		)
 	})
 
-	it("should use file cache on second call", async () => {
+	it("should stop pagination early when channel is found", async () => {
 		const { resolveChannel } = await import("../src/platforms/slack/resolve.ts")
-		const client = mockClient([{ name: "general", id: "C001" }], [])
-		await resolveChannel(client as any, "#general", "ws1")
-		await resolveChannel(client as any, "#general", "ws1")
+		const client = {
+			conversations: {
+				list: vi.fn()
+					.mockResolvedValueOnce({
+						channels: [{ name: "general", id: "C001" }],
+						response_metadata: { next_cursor: "page2" },
+					})
+					.mockResolvedValueOnce({
+						channels: [{ name: "random", id: "C002" }],
+						response_metadata: { next_cursor: "" },
+					}),
+			},
+			users: { list: vi.fn() },
+		} as unknown
+		const result = await resolveChannel(client as any, "#general", "ws1")
+		expect(result).toBe("C001")
 		expect((client as any).conversations.list).toHaveBeenCalledTimes(1)
 	})
 
