@@ -67,10 +67,10 @@ describe("search messages", () => {
 		)
 	})
 
-	it("should default count to 20", async () => {
+	it("should not pass count when not specified", async () => {
 		await run({})
 		expect(mockSearchMessages).toHaveBeenCalledWith(
-			expect.objectContaining({ count: 20 }),
+			expect.not.objectContaining({ count: expect.anything() }),
 		)
 	})
 
@@ -107,10 +107,13 @@ describe("search all", () => {
 		)
 	})
 
-	it("should default to page 1 and count 20", async () => {
+	it("should default to page 1 and no count", async () => {
 		await run({})
 		expect(mockSearchAll).toHaveBeenCalledWith(
-			expect.objectContaining({ page: 1, count: 20 }),
+			expect.objectContaining({ page: 1 }),
+		)
+		expect(mockSearchAll).toHaveBeenCalledWith(
+			expect.not.objectContaining({ count: expect.anything() }),
 		)
 	})
 
@@ -134,10 +137,13 @@ describe("search files", () => {
 		)
 	})
 
-	it("should default to page 1 and count 20", async () => {
+	it("should default to page 1 and no count", async () => {
 		await run({})
 		expect(mockSearchFiles).toHaveBeenCalledWith(
-			expect.objectContaining({ page: 1, count: 20 }),
+			expect.objectContaining({ page: 1 }),
+		)
+		expect(mockSearchFiles).toHaveBeenCalledWith(
+			expect.not.objectContaining({ count: expect.anything() }),
 		)
 	})
 

@@ -31,7 +31,7 @@ export const historyCommand = defineCommand({
       const client = createSlackClient(token);
       const channelId = await resolveChannel(client, args.channel, workspace);
 
-      const limit = args.limit ? parseInt(args.limit, 10) : 20;
+      const limit = args.limit ? parseInt(args.limit, 10) : undefined;
 
       const messages: Record<string, unknown>[] = [];
       let cursor: string | undefined = args.cursor;
@@ -41,7 +41,7 @@ export const historyCommand = defineCommand({
           const result = await client.conversations.replies({
             channel: channelId,
             ts: args.thread,
-            limit,
+            ...(limit !== undefined ? { limit } : {}),
             cursor,
           });
 
@@ -62,7 +62,7 @@ export const historyCommand = defineCommand({
         do {
           const result = await client.conversations.history({
             channel: channelId,
-            limit,
+            ...(limit !== undefined ? { limit } : {}),
             cursor,
             latest: args.before,
           });

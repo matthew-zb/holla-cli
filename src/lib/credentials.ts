@@ -71,6 +71,65 @@ export async function removeWorkspace(workspace: string): Promise<boolean> {
   }
 }
 
+export async function storeBrowserCredentials(
+  workspace: string,
+  browserToken: string,
+  browserCookie: string,
+): Promise<void> {
+  await ensureCredentialsDir();
+  const existing = await getWorkspaceCredentials(workspace);
+  const creds: WorkspaceCredentials = existing ?? { name: workspace };
+  creds.browserToken = browserToken;
+  creds.browserCookie = browserCookie;
+  await writeFile(credentialPath(workspace), JSON.stringify(creds, null, 2));
+}
+
+export async function getBrowserCredentials(
+  workspace: string | undefined,
+): Promise<{ browserToken: string; browserCookie: string; workspace: string }> {
+  const workspaces = await listWorkspaces();
+
+  if (workspaces.length === 0) {
+    throw new Error(
+      'No workspaces configured. Run "holla slack auth login" to authenticate.',
+    );
+  }
+
+  let creds: WorkspaceCredentials;
+
+  if (workspace) {
+    const found = workspaces.find((w) => w.name === workspace);
+    if (!found) {
+      throw new Error(
+        `Workspace "${workspace}" not found. Available: ${workspaces.map((w) => w.name).join(", ")}`,
+      );
+    }
+    creds = found;
+  } else if (workspaces.length === 1) {
+    creds = workspaces[0]!;
+  } else {
+    const names = workspaces.map((w) => w.name).join(", ");
+    throw new Error(
+      `Multiple workspaces found. Use --workspace to specify: ${names}`,
+    );
+  }
+
+  if (!creds.browserToken || !creds.browserCookie) {
+    // Try to auto-read from the Slack desktop app (macOS only)
+    const { readSlackDesktopCredentials } = await import("../platforms/slack/later/desktop.ts");
+    const desktop = await readSlackDesktopCredentials(creds.name);
+    if (desktop) {
+      return { browserToken: desktop.xoxc, browserCookie: desktop.xoxd, workspace: creds.name };
+    }
+
+    throw new Error(
+      `No browser credentials found for workspace "${creds.name}". Run: holla slack auth browser --workspace ${creds.name}`,
+    );
+  }
+
+  return { browserToken: creds.browserToken, browserCookie: creds.browserCookie, workspace: creds.name };
+}
+
 export async function getToken(
   workspace: string | undefined,
 ): Promise<{ token: string; workspace: string }> {

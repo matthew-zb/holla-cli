@@ -14,6 +14,8 @@ export interface WorkspaceCredentials {
   name: string;
   botToken?: string;
   userToken?: string;
+  browserToken?: string;
+  browserCookie?: string;
 }
 
 export interface ResolvedEntity {

@@ -25,7 +25,7 @@ export const listCommand = defineCommand({
       const { token } = await getToken(args.workspace);
       const client = createSlackClient(token);
 
-      const limit = args.limit ? parseInt(args.limit, 10) : 20;
+      const limit = args.limit ? parseInt(args.limit, 10) : undefined;
       const types = args.types ?? "public_channel,private_channel";
 
       const nameFilter = args.name ? args.name.toLowerCase() : undefined;
@@ -34,7 +34,7 @@ export const listCommand = defineCommand({
 
       do {
         const result = await client.conversations.list({
-          limit,
+          ...(limit !== undefined ? { limit } : {}),
           types,
           cursor,
         });

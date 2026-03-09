@@ -25,9 +25,8 @@ export const listCommand = defineCommand({
       const { token, workspace } = await getToken(args.workspace);
       const client = createSlackClient(token);
 
-      const baseParams: Record<string, unknown> = {
-        count: args.limit ? parseInt(args.limit, 10) : 20,
-      };
+      const baseParams: Record<string, unknown> = {};
+      if (args.limit) baseParams.count = parseInt(args.limit, 10);
 
       if (args.channel) {
         baseParams.channel = await resolveChannel(client, args.channel, workspace);

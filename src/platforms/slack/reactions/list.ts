@@ -36,9 +36,9 @@ export const listCommand = defineCommand({
 
       do {
         const params: Record<string, unknown> = {
-          limit: args.limit ? parseInt(args.limit, 10) : 20,
           full: true,
         };
+        if (args.limit) params.limit = parseInt(args.limit, 10);
         if (userId) params.user = userId;
         if (cursor) params.cursor = cursor;
 

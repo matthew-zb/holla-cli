@@ -81,11 +81,11 @@ describe("channels list", () => {
 		)
 	})
 
-	it("should pass limit (default 20)", async () => {
+	it("should not pass limit when not specified", async () => {
 		mockConversationsList.mockResolvedValueOnce({ channels: [] })
 		await run({})
 		expect(mockConversationsList).toHaveBeenCalledWith(
-			expect.objectContaining({ limit: 20 }),
+			expect.not.objectContaining({ limit: expect.anything() }),
 		)
 	})
 
@@ -313,11 +313,11 @@ describe("stars list", () => {
 		await (listCommand as any).run({ args: { workspace: "test-ws", ...args } })
 	}
 
-	it("should default count to 20", async () => {
+	it("should not pass count when not specified", async () => {
 		mockStarsList.mockResolvedValueOnce({ items: [] })
 		await run({})
 		expect(mockStarsList).toHaveBeenCalledWith(
-			expect.objectContaining({ count: 20 }),
+			expect.not.objectContaining({ count: expect.anything() }),
 		)
 	})
 
@@ -360,11 +360,11 @@ describe("files list", () => {
 		await (listCommand as any).run({ args: { workspace: "test-ws", ...args } })
 	}
 
-	it("should default count to 20", async () => {
+	it("should not pass count when not specified", async () => {
 		mockFilesList.mockResolvedValueOnce({ files: [] })
 		await run({})
 		expect(mockFilesList).toHaveBeenCalledWith(
-			expect.objectContaining({ count: 20 }),
+			expect.not.objectContaining({ count: expect.anything() }),
 		)
 	})
 
@@ -408,11 +408,11 @@ describe("reactions list", () => {
 		await (listCommand as any).run({ args: { workspace: "test-ws", ...args } })
 	}
 
-	it("should default limit to 20", async () => {
+	it("should not pass limit when not specified", async () => {
 		mockReactionsList.mockResolvedValueOnce({ items: [] })
 		await run({})
 		expect(mockReactionsList).toHaveBeenCalledWith(
-			expect.objectContaining({ limit: 20 }),
+			expect.not.objectContaining({ limit: expect.anything() }),
 		)
 	})
 

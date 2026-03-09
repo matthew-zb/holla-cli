@@ -18,12 +18,17 @@ export const filesCommand = defineCommand({
   },
   async run({ args }) {
     try {
+      if (args.limit && parseInt(args.limit, 10) > 100) {
+        console.error("\x1b[31m✗\x1b[0m --limit cannot exceed 100 for search API");
+        process.exit(1);
+      }
+
       const { token } = await getToken(args.workspace);
       const client = createSlackClient(token);
 
       const result = await client.search.files({
         query: args.query,
-        count: args.limit ? parseInt(args.limit, 10) : 20,
+        ...(args.limit ? { count: parseInt(args.limit, 10) } : {}),
         page: args.page ? parseInt(args.page, 10) : 1,
         sort: (args.sort as "score" | "timestamp") ?? "score",
         sort_dir: (args["sort-dir"] as "asc" | "desc") ?? "desc",

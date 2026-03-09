@@ -20,9 +20,8 @@ export const listCommand = defineCommand({
       let cursor: string | undefined = args.cursor;
 
       do {
-        const params: Record<string, unknown> = {
-          count: args.limit ? parseInt(args.limit, 10) : 20,
-        };
+        const params: Record<string, unknown> = {};
+        if (args.limit) params.count = parseInt(args.limit, 10);
         if (cursor) params.cursor = cursor;
 
         const result = await client.stars.list(params);
